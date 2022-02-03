@@ -1,25 +1,32 @@
 const express = require('express')
 const helmet = require('helmet')
 const cors = require('cors')
-const authRouter = require('./auth/auth-router')
-const plantRouter = require('./plants/plants-router')
-const userRouter = require('./users/user-router')
+const db = require('./data/db-config')
+
+const { restricted } = require('./auth/auth-middleware');
+const authRouter = require('./auth/auth-router');
+const plantRouter = require('./plants/plants-router');
+
 
 const server = express()
 server.use(express.json())
 server.use(helmet())
 server.use(cors())
 
-server.use('/api/auth', authRouter)
-server.use('/api/plants', plantRouter)
-server.use('/api/users', userRouter)
+server.use('/api/auth', authRouter);
+server.use('/api/plants', restricted, plantRouter); 
 
-server.use('*', (req, res) => {
-  res.status(404).json({ message: `${req.method} ${req.baseUrl} is not a valid address`})
+server.get('/', (req, res) => {
+  res.send('<h1>you rang?...</h1>')
 })
 
 server.use((err, req, res, next) => { 
-  res.status(err.status || 500).json({message: `${err.message}`})
-})
+  res.status(err.status || 500).json({
+    message: err.message,
+    stack: err.stack,
+  });
+});
 
-module.exports = server
+
+
+module.exports = server;

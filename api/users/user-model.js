@@ -1,40 +1,32 @@
-const db = require('../data/db-config')
+const db = require('../data/db-config');
 
-async function get() {
-    return await db('users')
+
+async function findAll() { 
+  return await db('users') 
+}
+async function findById (id) {
+  return await db('users').where('id', id)
+}
+async function findByFilter (filter) {  
+  return await db('users').where(filter);
 }
 
-async function getById(id) {
-    return await db('users').where('user_id', id)
+async function create(user) {
+  const [newUser] = await db('users')
+    .insert(user, ['user_id', 'username', 'phoneNumber']);
+  return newUser;
 }
-
-async function getPlantByUserId(id) {
-    const userPlants = await db('users as u')
-        .leftJoin('plants as p', 'u.user_id', 'p.user_id')
-        .select('p.nickname', 'p.species', 'p.h2oFrequency', 'p.image')
-        .where('p.user_id', id)
-    const user = await getById(id)
-    return {
-        user,
-        userPlants
-    }
-}
-
-function update(id, changes) {
-    return db("users")
-      .where("user_id", id)
-      .update(changes)
-  }
-
-async function create(newUser) {
-    const { user_id } = await db('users').insert(newUser)
-    return getById(user_id)
+async function update(user_id, updates){
+  const [updatedUser] = await db('users')
+    .update(updates, ['user_id', 'phoneNumber'])
+    .where('user_id', user_id);
+  return updatedUser;
 }
 
 module.exports = {
-    get,
-    getById,
-    getPlantByUserId,
-    update,
-    create
-}
+  findAll,
+  findById,
+  findByFilter,
+  create,
+  update,
+};
